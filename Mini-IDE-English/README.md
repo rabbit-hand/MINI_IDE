@@ -1,34 +1,44 @@
-# Mini IDE - English Version
+# Mini IDE v2.0 - English Version
 
-A modern, lightweight code editor with advanced features for developers.
+A modern, intelligent code editor with advanced error analysis, auto-fix capabilities, and virtual environment management.
 
 ![Mini IDE](https://img.shields.io/badge/version-2.0-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.8%2B-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Features](https://img.shields.io/badge/error_analysis-auto_fix-ff69b4.svg)
+![Languages](https://img.shields.io/badge/languages-15%2B-orange.svg)
 
 ## ✨ Features
 
 ### 🎯 Core Features
-- **Syntax Highlighting** - Support for Python, JavaScript, HTML, CSS, JSON, XML, Markdown, Java, C#, C/C++, and Rust
+- **Syntax Highlighting** - Support for 15+ languages: Python, JavaScript, HTML, CSS, JSON, XML, Markdown, Java, C#, C/C++, Rust, PHP, Ruby, Go, Swift, Kotlin
 - **Dark/Light Theme** - Eye-friendly themes with smooth transitions
 - **Auto-save** - Configurable auto-save with customizable intervals
 - **Font Customization** - Adjustable font sizes with presets (Small, Medium, Large)
 - **Recent Files** - Quick access to your recently opened files
+- **Optimized UI Layout** - No text truncation, proper button visibility
 
 ### 🛠️ Advanced Editing
-- **Search & Replace** - Powerful find and replace functionality
+- **Search & Replace** - Powerful find and replace functionality with regex support
 - **Code Formatting** - Automatic code formatting to PEP8 standards
-- **Syntax Checking** - Real-time syntax error detection
-- **Auto-fix** - Intelligent error correction
 - **Line Operations** - Delete, duplicate, move lines up/down
 - **Comment Toggle** - Quick comment/uncomment functionality
 - **Bracket Enclosing** - Wrap selections in various bracket types
+- **Clipboard Error Copy** - One-click error message copying
+
+### 🤖 Intelligent Error Analysis & Auto-Fix
+- **Smart Error Detection** - Automatic line number and error type identification
+- **Visual Error Navigation** - Jump to error lines with highlighting
+- **Auto-Fix Capabilities** - One-click fixes for common syntax errors
+- **Error Suggestions** - Context-aware recommendations for complex issues
+- **Multi-language Error Support** - Syntax, Indentation, Name, Type, Attribute, Import errors
 
 ### 📦 Development Tools
-- **Module Installation** - Automatic detection and installation of missing Python modules
-- **Code Execution** - Run Python code directly from the editor
-- **Test Runner** - Execute unit tests with timeout settings
-- **Multi-language Support** - Save files in various programming languages
+- **Enhanced Module Installation** - Auto-detect dependencies from code with virtual environment support
+- **Virtual Environment Management** - Custom venv paths with persistent settings
+- **Code Execution** - Run Python code directly with automatic error analysis
+- **Package Installation** - Install modules in virtual or global environments
+- **Error-to-Fix Workflow** - Seamless transition from error detection to resolution
 
 ### 🎨 User Interface
 - **Modern Design** - Clean, professional interface with smooth animations
@@ -110,11 +120,24 @@ python mini_ide_english.pyw
 3. **Save File**: Click "Save" or press `Ctrl+S`
 4. **Run Code**: Click "Run" or press `F5`
 
+### Error Analysis & Auto-Fix
+1. **Write Code**: Create or open a Python file
+2. **Run Code**: Press F5 or click the Run button
+3. **Error Detection**: If errors occur, the analysis dialog appears automatically
+4. **Auto-Fix**: Click "🔧 Auto Fix" for common syntax errors (missing colons, quotes, brackets)
+5. **Navigate**: Use "📍 Go to Line" to jump to error locations with highlighting
+6. **Copy Errors**: Use "📋 Copy" to copy error messages to clipboard
+
+### Virtual Environment Setup
+1. **Open Module Installer**: Click the 📦 Install button
+2. **Configure Venv**: Enable "Use Virtual Environment" and set custom path
+3. **Auto-Detect Modules**: Choose "Auto-detect from code" to find required packages
+4. **Install**: Select modules and install with one click
+
 ### Advanced Features
-1. **Module Installation**: The editor automatically detects missing modules and offers to install them
+1. **Enhanced Module Installation**: Auto-detect dependencies from code with virtual environment support
 2. **Code Formatting**: Use "Format Code" to apply PEP8 standards
-3. **Syntax Checking**: Real-time syntax validation with error highlighting
-4. **Auto-fix**: Intelligent error correction for common issues
+3. **Error-to-Fix Workflow**: Seamless transition from error detection to resolution
 
 ## 🔧 Customization
 
@@ -142,7 +165,10 @@ Mini-IDE-English/
 ├── theme_settings.json     # Theme and font preferences
 ├── font_settings.json     # Font configuration
 ├── auto_save_settings.json # Auto-save configuration
-└── recent_files.json      # Recent files history
+├── recent_files.json      # Recent files history
+├── venv_settings.json      # Virtual environment path and usage settings
+└── dist/                   # Built executable
+    └── Mini IDE English.exe # Ready-to-run application
 ```
 
 ## 🐛 Troubleshooting

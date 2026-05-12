@@ -8,6 +8,7 @@ A modern, professional code editor with advanced features and contemporary desig
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import subprocess
+import threading
 import sys
 import re
 import locale
@@ -416,6 +417,7 @@ class ModernIDE:
             ("🎨", "Format", self.format_code, ""),
             ("✅", "Check", self.check_syntax, ""),
             ("🔧", "Fix", self.auto_fix, ""),
+            ("📦", "Install", self.install_module, "Ctrl+I"),
             ("▶️", "Run", self.run_code, "F5"),
             ("🌙", "Theme", self.toggle_theme, "Ctrl+T"),
             ("⚙️", "Settings", self.show_settings, ""),
@@ -426,18 +428,18 @@ class ModernIDE:
                 self.toolbar,
                 text=f"{icon}\n{label}",
                 command=command,
-                font=(system_fonts['ui_font'], 9),
+                font=(system_fonts['ui_font'], 10),
                 bg=theme['toolbar_bg'],
                 fg=theme['fg'],
                 relief=tk.FLAT,
                 borderwidth=0,
-                padx=6,
-                pady=4,
+                padx=4,
+                pady=3,
                 cursor='hand2',
-                width=6,
+                width=8,
                 height=2
             )
-            btn.pack(side=tk.LEFT, padx=2, pady=5)
+            btn.pack(side=tk.LEFT, padx=1, pady=3)
             
             # Add tooltip with description and shortcut
             tooltip_text = f"{label}"
@@ -861,16 +863,21 @@ class ModernIDE:
         # Simple find dialog implementation
         dialog = tk.Toplevel(self.root)
         dialog.title(t('find'))
-        dialog.geometry("300x100")
+        dialog.geometry("400x150")
         dialog.resizable(False, False)
         
         theme = THEMES[current_theme]
         dialog.configure(bg=theme['bg'])
         
-        tk.Label(dialog, text=t('search'), bg=theme['bg'], fg=theme['fg']).pack(pady=5)
+        # Main frame with padding
+        main_frame = tk.Frame(dialog, bg=theme['bg'])
+        main_frame.pack(pady=10, padx=15, fill=tk.BOTH, expand=True)
         
-        entry = tk.Entry(dialog, font=(system_fonts['ui_font'], 10))
-        entry.pack(pady=5, padx=10, fill=tk.X)
+        tk.Label(main_frame, text=t('search'), bg=theme['bg'], fg=theme['fg'],
+                font=(system_fonts['ui_font'], 10)).pack(pady=5)
+        
+        entry = tk.Entry(main_frame, font=(system_fonts['ui_font'], 10))
+        entry.pack(pady=5, fill=tk.X)
         entry.focus_set()
         
         def find_next():
@@ -885,31 +892,39 @@ class ModernIDE:
                 else:
                     messagebox.showinfo(t('info'), t('search_not_found'))
         
-        button_frame = tk.Frame(dialog, bg=theme['bg'])
+        button_frame = tk.Frame(main_frame, bg=theme['bg'])
         button_frame.pack(pady=10)
         
         tk.Button(button_frame, text=t('find_next'), command=find_next, 
-                 bg=theme['accent'], fg='white').pack(side=tk.LEFT, padx=5)
+                 bg=theme['accent'], fg='white', font=(system_fonts['ui_font'], 9),
+                 padx=15, pady=5).pack(side=tk.LEFT, padx=5)
         tk.Button(button_frame, text=t('close'), command=dialog.destroy,
-                 bg=theme['bg_secondary'], fg=theme['fg']).pack(side=tk.LEFT, padx=5)
+                 bg=theme['bg_secondary'], fg=theme['fg'], font=(system_fonts['ui_font'], 9),
+                 padx=15, pady=5).pack(side=tk.LEFT, padx=5)
     
     def show_replace_dialog(self):
         # Simple replace dialog implementation
         dialog = tk.Toplevel(self.root)
         dialog.title(t('replace'))
-        dialog.geometry("350x150")
+        dialog.geometry("450x200")
         dialog.resizable(False, False)
         
         theme = THEMES[current_theme]
         dialog.configure(bg=theme['bg'])
         
-        tk.Label(dialog, text=t('find'), bg=theme['bg'], fg=theme['fg']).pack(pady=5)
-        find_entry = tk.Entry(dialog, font=(system_fonts['ui_font'], 10))
-        find_entry.pack(pady=5, padx=10, fill=tk.X)
+        # Main frame with padding
+        main_frame = tk.Frame(dialog, bg=theme['bg'])
+        main_frame.pack(pady=10, padx=15, fill=tk.BOTH, expand=True)
         
-        tk.Label(dialog, text=t('replace'), bg=theme['bg'], fg=theme['fg']).pack(pady=5)
-        replace_entry = tk.Entry(dialog, font=(system_fonts['ui_font'], 10))
-        replace_entry.pack(pady=5, padx=10, fill=tk.X)
+        tk.Label(main_frame, text=t('find'), bg=theme['bg'], fg=theme['fg'],
+                font=(system_fonts['ui_font'], 10)).pack(pady=5)
+        find_entry = tk.Entry(main_frame, font=(system_fonts['ui_font'], 10))
+        find_entry.pack(pady=5, fill=tk.X)
+        
+        tk.Label(main_frame, text=t('replace'), bg=theme['bg'], fg=theme['fg'],
+                font=(system_fonts['ui_font'], 10)).pack(pady=5)
+        replace_entry = tk.Entry(main_frame, font=(system_fonts['ui_font'], 10))
+        replace_entry.pack(pady=5, fill=tk.X)
         
         def replace_all():
             find_text = find_entry.get()
@@ -922,13 +937,15 @@ class ModernIDE:
                 count = content.count(find_text)
                 messagebox.showinfo(t('success'), f"{count} {t('replace_count')}")
         
-        button_frame = tk.Frame(dialog, bg=theme['bg'])
+        button_frame = tk.Frame(main_frame, bg=theme['bg'])
         button_frame.pack(pady=10)
         
         tk.Button(button_frame, text=t('replace_all'), command=replace_all,
-                 bg=theme['accent'], fg='white').pack(side=tk.LEFT, padx=5)
+                 bg=theme['accent'], fg='white', font=(system_fonts['ui_font'], 9),
+                 padx=15, pady=5).pack(side=tk.LEFT, padx=5)
         tk.Button(button_frame, text=t('close'), command=dialog.destroy,
-                 bg=theme['bg_secondary'], fg=theme['fg']).pack(side=tk.LEFT, padx=5)
+                 bg=theme['bg_secondary'], fg=theme['fg'], font=(system_fonts['ui_font'], 9),
+                 padx=15, pady=5).pack(side=tk.LEFT, padx=5)
     
     def format_code(self):
         if not active_tab:
@@ -1047,6 +1064,14 @@ class ModernIDE:
                         text_widget.insert(tk.END, f"Output:\n{result.stdout}\n")
                     if result.stderr:
                         text_widget.insert(tk.END, f"Error:\n{result.stderr}\n")
+                        # Show error analysis dialog
+                        self.show_error_dialog(result.stderr, active_tab.get_content(), active_tab)
+                    
+                    # Auto-close functionality
+                    auto_close_setting = getattr(self, 'auto_close_setting', 'never')
+                    if auto_close_setting != 'never':
+                        close_delay = int(auto_close_setting) * 1000  # Convert to milliseconds
+                        output_window.after(close_delay, output_window.destroy)
                     
                     # Clean up temp file
                     os.unlink(temp_file.name)
@@ -1059,49 +1084,394 @@ class ModernIDE:
         except Exception as e:
             messagebox.showerror(t('error'), f"{t('run_failed')}: {e}")
     
+    def parse_imports(self, code):
+        """Parse Python code to extract import statements"""
+        imports = set()
+        
+        # Regular expressions for different import patterns
+        patterns = [
+            r'^import\s+([a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*)',  # import module
+            r'^from\s+([a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*)\s+import',  # from module import
+        ]
+        
+        for line in code.split('\n'):
+            line = line.strip()
+            if line.startswith('#') or not line:
+                continue
+                
+            for pattern in patterns:
+                match = re.match(pattern, line)
+                if match:
+                    module_name = match.group(1)
+                    # Get the top-level package name
+                    top_level = module_name.split('.')[0]
+                    # Skip standard library modules
+                    if top_level not in self.get_stdlib_modules():
+                        imports.add(top_level)
+                    break
+        
+        return list(imports)
+    
+    def get_stdlib_modules(self):
+        """Get a list of standard library modules to skip"""
+        return {
+            'os', 'sys', 're', 'json', 'time', 'datetime', 'math', 'random',
+            'collections', 'itertools', 'functools', 'operator', 'pathlib',
+            'urllib', 'http', 'email', 'html', 'xml', 'sqlite3', 'csv',
+            'configparser', 'logging', 'unittest', 'argparse', 'subprocess',
+            'threading', 'multiprocessing', 'socket', 'ssl', 'hashlib',
+            'hmac', 'base64', 'uuid', 'tempfile', 'shutil', 'glob',
+            'fnmatch', 'pickle', 'struct', 'array', 'bisect', 'heapq',
+            'queue', 'weakref', 'copy', 'pprint', 'repr', 'stringio',
+            'io', 'fractions', 'decimal', 'statistics', 'enum',
+            'typing', 'contextlib', 'abc', 'inspect', 'dis', 'importlib',
+            'pkgutil', 'modulefinder', 'runpy', 'site', 'user',
+            'platform', 'locale', 'codecs', 'encodings', 'textwrap',
+            'unicodedata', 'stringprep', 'readline', 'rlcompleter',
+            'cmd', 'shlex', 'tokenize', 'keyword', 'token', 'ast',
+            'symbol', 'parser', 'py_compile', 'compileall', 'distutils',
+            'ensurepip', 'venv', 'zipapp', 'msvcrt', 'winsound',
+            'posix', 'pwd', 'spwd', 'grp', 'crypt', 'termios', 'tty',
+            'pty', 'fcntl', 'pipes', 'resource', 'nis', 'syslog',
+            'select', 'selectors', 'signal', 'mmap', 'ctypes',
+            'curses', 'turtle', 'tkinter', 'idlelib', 'test',
+            'webbrowser', 'mailcap', 'mailbox', 'mimetypes', 'uu',
+            'xdrlib', 'imaplib', 'poplib', 'smtplib', 'nntplib',
+            'telnetlib', 'ftplib', 'gzip', 'bz2', 'lzma', 'zipfile',
+            'tarfile', 'shelve', 'dbm', 'sqlite3', 'decimal',
+            'fractions', 'statistics', 'queue', 'asyncio',
+            'concurrent', 'multiprocessing', 'socketserver',
+            'http', 'urllib', 'email', 'xml', 'html', 'websockets',
+            'wsgiref', 'xmlrpc', 'ipaddress', 'ssl', 'hashlib',
+            'hmac', 'secrets', 'uuid', 'base64', 'binascii',
+            'quopri', 'uu', 'xdrlib', 'struct', 'code', 'codeop',
+            'dis', 'pickletools', 'marshal', 'importlib', 'pkgutil',
+            'modulefinder', 'runpy', 'parser', 'ast', 'symbol',
+            'token', 'keyword', 'tokenize', 'tabnanny', 'pyclbr',
+            'py_compile', 'compileall', 'distutils', 'ensurepip',
+            'venv', 'zipapp', 'site', 'user', 'pydoc', 'doctest',
+            'unittest', 'test', 'bdb', 'pdb', 'profile', 'pstats',
+            'timeit', 'trace', 'tracemalloc', 'gc', 'weakref',
+            'copy', 'copyreg', 'pprint', 'repr', 'enum', 'types',
+            'dataclasses', 'typing', 'contextlib', 'abc', 'atexit',
+            'traceback', 'faulthandler', 'sysconfig', 'platform',
+            'errno', 'stat', 'filecmp', 'fileinput', 'glob',
+            'fnmatch', 'linecache', 'shutil', 'tempfile', 'glob',
+            'os', 'os.path', 'time', 'argparse', 'getopt', 'logging',
+            'getpass', 'curses', 'platform', 'errno', 'ctypes'
+        }
+    
+    def install_module(self):
+        """Install Python module automatically from code"""
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Auto Module Installer")
+        dialog.geometry("600x500")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        theme = THEMES[current_theme]
+        dialog.configure(bg=theme['bg'])
+        
+        # Main frame with padding
+        main_frame = tk.Frame(dialog, bg=theme['bg'])
+        main_frame.pack(pady=15, padx=20, fill=tk.BOTH, expand=True)
+        
+        # Title
+        tk.Label(main_frame, text="🔍 Auto Module Detection & Installation", 
+                bg=theme['bg'], fg=theme['fg'], 
+                font=(system_fonts['ui_font'], 14, 'bold')).pack(pady=10)
+        
+        tk.Label(main_frame, text="Scanning your code for missing modules...", 
+                bg=theme['bg'], fg=theme['fg'], 
+                font=(system_fonts['ui_font'], 12)).pack(pady=5)
+        
+        # Auto mode - Detected modules list
+        auto_frame = tk.Frame(main_frame, bg=theme['bg'])
+        auto_frame.pack(pady=10, fill=tk.BOTH, expand=True)
+        
+        tk.Label(auto_frame, text="📦 Modules to Install:", bg=theme['bg'], fg=theme['fg'], 
+                font=(system_fonts['ui_font'], 12, 'bold')).pack(anchor=tk.W)
+        
+        # Listbox for detected modules
+        list_frame = tk.Frame(auto_frame, bg=theme['bg'])
+        list_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        
+        scrollbar = tk.Scrollbar(list_frame)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        modules_listbox = tk.Listbox(list_frame, font=(system_fonts['ui_font'], 11),
+                                    bg=theme['bg_secondary'], fg=theme['fg'],
+                                    yscrollcommand=scrollbar.set, selectmode=tk.MULTIPLE)
+        modules_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.config(command=modules_listbox.yview)
+        
+        # Load saved venv settings
+        venv_settings = self.load_venv_settings()
+        
+        # Virtual environment settings
+        venv_frame = tk.Frame(main_frame, bg=theme['bg'])
+        venv_frame.pack(pady=10, padx=15, fill=tk.X)
+        
+        use_venv = tk.BooleanVar(value=True)
+        venv_check = tk.Checkbutton(venv_frame, text="🐍 Use Virtual Environment", 
+                                   variable=use_venv, bg=theme['bg'], fg=theme['fg'],
+                                   font=(system_fonts['ui_font'], 11))
+        venv_check.pack(anchor=tk.W, pady=5)
+        
+        # Virtual environment path settings
+        path_frame = tk.Frame(venv_frame, bg=theme['bg'])
+        path_frame.pack(fill=tk.X, pady=8)
+        
+        use_custom_path = tk.BooleanVar(value=venv_settings.get('use_custom_path', False))
+        custom_check = tk.Checkbutton(path_frame, text="📁 Custom Path:", 
+                                     variable=use_custom_path, bg=theme['bg'], fg=theme['fg'],
+                                     font=(system_fonts['ui_font'], 10))
+        custom_check.pack(side=tk.LEFT, padx=(0, 10))
+        
+        venv_path_var = tk.StringVar(value=venv_settings.get('venv_path', '.venv'))
+        venv_path_entry = tk.Entry(path_frame, textvariable=venv_path_var, 
+                                  font=(system_fonts['ui_font'], 10),
+                                  bg=theme['bg_secondary'], fg=theme['fg'])
+        venv_path_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        
+        browse_btn = tk.Button(path_frame, text="📂 Browse", 
+                             command=lambda: self.browse_venv_path(venv_path_var),
+                             bg=theme['bg_secondary'], fg=theme['fg'],
+                             font=(system_fonts['ui_font'], 9))
+        browse_btn.pack(side=tk.RIGHT)
+        
+        # Status label
+        status_label = tk.Label(main_frame, text="", bg=theme['bg'], fg=theme['fg_secondary'],
+                               font=(system_fonts['ui_font'], 11), wraplength=500)
+        status_label.pack(pady=8, padx=15, fill=tk.X)
+        
+        def detect_modules():
+            if not active_tab:
+                modules_listbox.delete(0, tk.END)
+                status_label.configure(text="📄 No active code file to analyze")
+                return
+            
+            code = active_tab.get_content()
+            modules = self.parse_imports(code)
+            modules_listbox.delete(0, tk.END)
+            
+            if modules:
+                for module in modules:
+                    modules_listbox.insert(tk.END, module)
+                status_label.configure(text=f"✅ Found {len(modules)} modules to install")
+            else:
+                status_label.configure(text="ℹ️ No external modules detected")
+        
+        def install():
+            selected_indices = modules_listbox.curselection()
+            if not selected_indices:
+                status_label.configure(text="⚠️ Please select modules to install")
+                return
+            
+            modules_to_install = [modules_listbox.get(i) for i in selected_indices]
+            status_label.configure(text="🔄 Installing...")
+            dialog.update()
+            
+            def install_in_thread():
+                try:
+                    if use_venv.get():
+                        # Get virtual environment path
+                        if use_custom_path.get():
+                            venv_path = venv_path_var.get()
+                            if not os.path.isabs(venv_path):
+                                venv_path = os.path.join(os.getcwd(), venv_path)
+                        else:
+                            venv_path = os.path.join(os.getcwd(), ".venv")
+                        
+                        # Save settings
+                        self.save_venv_settings(venv_path_var.get(), use_custom_path.get())
+                        
+                        # Create virtual environment if it doesn't exist
+                        if not os.path.exists(venv_path):
+                            status_label.configure(text=f"Creating virtual environment at {venv_path}...")
+                            dialog.update()
+                            subprocess.run([sys.executable, "-m", "venv", venv_path], 
+                                         check=True, capture_output=True)
+                        
+                        # Get pip path in virtual environment
+                        if os.name == 'nt':  # Windows
+                            pip_path = os.path.join(venv_path, "Scripts", "pip")
+                        else:  # Unix
+                            pip_path = os.path.join(venv_path, "bin", "pip")
+                        
+                        # Install modules in virtual environment
+                        for module in modules_to_install:
+                            status_label.configure(text=f"Installing {module} in {venv_path}...")
+                            dialog.update()
+                            result = subprocess.run([pip_path, "install", module], 
+                                                  capture_output=True, text=True, timeout=300)
+                            if result.returncode != 0:
+                                error_msg = f"❌ Failed to install {module}: {result.stderr}"
+                                status_label.configure(text=error_msg)
+                                # Add copy button for error
+                                error_frame = tk.Frame(dialog, bg=theme['bg'])
+                                error_frame.pack(pady=5, padx=20, fill=tk.X)
+                                
+                                tk.Label(error_frame, text="Error occurred:", 
+                                        bg=theme['bg'], fg=theme['fg'],
+                                        font=(system_fonts['ui_font'], 10)).pack(side=tk.LEFT)
+                                
+                                copy_btn = tk.Button(error_frame, text="📋 Copy", 
+                                                  command=lambda: self.copy_to_clipboard(error_msg),
+                                                  bg=theme['bg_secondary'], fg=theme['fg'],
+                                                  font=(system_fonts['ui_font'], 9))
+                                copy_btn.pack(side=tk.RIGHT, padx=5)
+                                return
+                    else:
+                        # Install in current environment
+                        for module in modules_to_install:
+                            status_label.configure(text=f"Installing {module}...")
+                            dialog.update()
+                            result = subprocess.run([sys.executable, "-m", "pip", "install", module], 
+                                                  capture_output=True, text=True, timeout=300)
+                            if result.returncode != 0:
+                                error_msg = f"❌ Failed to install {module}: {result.stderr}"
+                                status_label.configure(text=error_msg)
+                                # Add copy button for error
+                                error_frame = tk.Frame(dialog, bg=theme['bg'])
+                                error_frame.pack(pady=5, padx=20, fill=tk.X)
+                                
+                                tk.Label(error_frame, text="Error occurred:", 
+                                        bg=theme['bg'], fg=theme['fg'],
+                                        font=(system_fonts['ui_font'], 10)).pack(side=tk.LEFT)
+                                
+                                copy_btn = tk.Button(error_frame, text="📋 Copy", 
+                                                  command=lambda: self.copy_to_clipboard(error_msg),
+                                                  bg=theme['bg_secondary'], fg=theme['fg'],
+                                                  font=(system_fonts['ui_font'], 9))
+                                copy_btn.pack(side=tk.RIGHT, padx=5)
+                                return
+                    
+                    status_label.configure(text=f"✅ Successfully installed: {', '.join(modules_to_install)}")
+                        
+                except subprocess.TimeoutExpired:
+                    error_msg = "❌ Installation timed out"
+                    status_label.configure(text=error_msg)
+                    # Add copy button for timeout error
+                    error_frame = tk.Frame(dialog, bg=theme['bg'])
+                    error_frame.pack(pady=5, padx=20, fill=tk.X)
+                    
+                    tk.Label(error_frame, text="Timeout error:", 
+                            bg=theme['bg'], fg=theme['fg'],
+                            font=(system_fonts['ui_font'], 9)).pack(side=tk.LEFT)
+                    
+                    copy_btn = tk.Button(error_frame, text="📋 Copy Error", 
+                                      command=lambda: self.copy_to_clipboard(error_msg),
+                                      bg=theme['bg_secondary'], fg=theme['fg'],
+                                      font=(system_fonts['ui_font'], 10))
+                    copy_btn.pack(side=tk.RIGHT, padx=5)
+                except Exception as e:
+                    error_msg = f"❌ Error: {str(e)}"
+                    status_label.configure(text=error_msg)
+                    # Add copy button for general error
+                    error_frame = tk.Frame(dialog, bg=theme['bg'])
+                    error_frame.pack(pady=5, padx=20, fill=tk.X)
+                    
+                    tk.Label(error_frame, text="General error:", 
+                            bg=theme['bg'], fg=theme['fg'],
+                            font=(system_fonts['ui_font'], 9)).pack(side=tk.LEFT)
+                    
+                    copy_btn = tk.Button(error_frame, text="📋 Copy Error", 
+                                      command=lambda: self.copy_to_clipboard(error_msg),
+                                      bg=theme['bg_secondary'], fg=theme['fg'],
+                                      font=(system_fonts['ui_font'], 10))
+                    copy_btn.pack(side=tk.RIGHT, padx=5)
+            
+            # Run installation in separate thread
+            threading.Thread(target=install_in_thread, daemon=True).start()
+        
+        # Auto-detect modules on start
+        detect_modules()
+        
+        # Buttons
+        button_frame = tk.Frame(main_frame, bg=theme['bg'])
+        button_frame.pack(pady=15)
+        
+        tk.Button(button_frame, text="🚀 Install Selected", command=install,
+                 bg=theme['accent'], fg='white', font=(system_fonts['ui_font'], 11, 'bold'),
+                 padx=20, pady=8).pack(side=tk.LEFT, padx=8)
+        
+        tk.Button(button_frame, text="🔄 Refresh", command=detect_modules,
+                 bg=theme['bg_secondary'], fg=theme['fg'], font=(system_fonts['ui_font'], 11),
+                 padx=20, pady=8).pack(side=tk.LEFT, padx=8)
+        
+        tk.Button(button_frame, text="❌ Close", command=dialog.destroy,
+                 bg=theme['bg_secondary'], fg=theme['fg'], font=(system_fonts['ui_font'], 11),
+                 padx=20, pady=8).pack(side=tk.LEFT, padx=8)
+        
+        # Bind Enter key to install
+        dialog.bind('<Return>', lambda e: install())
+    
     def show_settings(self):
         # Settings dialog implementation
         dialog = tk.Toplevel(self.root)
         dialog.title(t('settings'))
-        dialog.geometry("400x300")
+        dialog.geometry("450x400")
         dialog.resizable(False, False)
         
         theme = THEMES[current_theme]
         dialog.configure(bg=theme['bg'])
         
+        # Main frame with padding
+        main_frame = tk.Frame(dialog, bg=theme['bg'])
+        main_frame.pack(pady=10, padx=15, fill=tk.BOTH, expand=True)
+        
         # Theme selection
-        tk.Label(dialog, text=t('theme'), bg=theme['bg'], fg=theme['fg']).pack(pady=10)
+        tk.Label(main_frame, text=t('theme'), bg=theme['bg'], fg=theme['fg'],
+                font=(system_fonts['ui_font'], 10)).pack(pady=10)
         
         theme_var = tk.StringVar(value=current_theme)
-        tk.Radiobutton(dialog, text=t('dark_theme'), variable=theme_var, value='dark',
+        tk.Radiobutton(main_frame, text=t('dark_theme'), variable=theme_var, value='dark',
                      bg=theme['bg'], fg=theme['fg'], selectcolor=theme['fg']).pack()
-        tk.Radiobutton(dialog, text=t('light_theme'), variable=theme_var, value='light',
+        tk.Radiobutton(main_frame, text=t('light_theme'), variable=theme_var, value='light',
                      bg=theme['bg'], fg=theme['fg'], selectcolor=theme['fg']).pack()
         
         # Font size
-        tk.Label(dialog, text=t('font_size'), bg=theme['bg'], fg=theme['fg']).pack(pady=10)
+        tk.Label(main_frame, text=t('font_size'), bg=theme['bg'], fg=theme['fg'],
+                font=(system_fonts['ui_font'], 10)).pack(pady=10)
         
         font_var = tk.IntVar(value=current_font_size)
-        tk.Spinbox(dialog, from_=8, to=32, textvariable=font_var,
+        tk.Spinbox(main_frame, from_=8, to=32, textvariable=font_var,
                   font=(system_fonts['ui_font'], 10)).pack()
+        
+        # Auto close after execution
+        tk.Label(main_frame, text="Auto Close After Execution", bg=theme['bg'], fg=theme['fg'],
+                font=(system_fonts['ui_font'], 10)).pack(pady=10)
+        
+        auto_close_var = tk.StringVar(value=getattr(self, 'auto_close_setting', 'never'))
+        
+        tk.Radiobutton(main_frame, text="Never Close", variable=auto_close_var, value='never',
+                     bg=theme['bg'], fg=theme['fg'], selectcolor=theme['fg']).pack()
+        tk.Radiobutton(main_frame, text="Close after 5 seconds", variable=auto_close_var, value='5',
+                     bg=theme['bg'], fg=theme['fg'], selectcolor=theme['fg']).pack()
+        tk.Radiobutton(main_frame, text="Close after 10 seconds", variable=auto_close_var, value='10',
+                     bg=theme['bg'], fg=theme['fg'], selectcolor=theme['fg']).pack()
         
         def apply_settings():
             global current_theme, current_font_size
             current_theme = theme_var.get()
             current_font_size = font_var.get()
+            self.auto_close_setting = auto_close_var.get()
             self.apply_theme()
             self.update_font_size()
             self.save_settings()
             dialog.destroy()
             messagebox.showinfo(t('success'), t('settings_saved'))
         
-        button_frame = tk.Frame(dialog, bg=theme['bg'])
+        button_frame = tk.Frame(main_frame, bg=theme['bg'])
         button_frame.pack(pady=20)
         
         tk.Button(button_frame, text=t('ok'), command=apply_settings,
-                 bg=theme['accent'], fg='white').pack(side=tk.LEFT, padx=5)
+                 bg=theme['accent'], fg='white', font=(system_fonts['ui_font'], 9),
+                 padx=15, pady=5).pack(side=tk.LEFT, padx=5)
         tk.Button(button_frame, text=t('cancel'), command=dialog.destroy,
-                 bg=theme['bg_secondary'], fg=theme['fg']).pack(side=tk.LEFT, padx=5)
+                 bg=theme['bg_secondary'], fg=theme['fg'], font=(system_fonts['ui_font'], 9),
+                 padx=15, pady=5).pack(side=tk.LEFT, padx=5)
     
     def show_about(self):
         messagebox.showinfo(t('about_title'), t('about_text'))
@@ -1158,6 +1528,7 @@ class ModernIDE:
                     settings = json.load(f)
                     current_theme = settings.get('theme', 'dark')
                     current_font_size = settings.get('font_size', system_fonts['default_size'])
+                    self.auto_close_setting = settings.get('auto_close', 'never')
             
             if os.path.exists(RECENT_FILES_FILE):
                 with open(RECENT_FILES_FILE, 'r', encoding='utf-8') as f:
@@ -1169,7 +1540,8 @@ class ModernIDE:
         try:
             settings = {
                 'theme': current_theme,
-                'font_size': current_font_size
+                'font_size': current_font_size,
+                'auto_close': getattr(self, 'auto_close_setting', 'never')
             }
             with open(SETTINGS_FILE, 'w', encoding='utf-8') as f:
                 json.dump(settings, f, indent=2)
@@ -1178,6 +1550,372 @@ class ModernIDE:
                 json.dump(recent_files[:10], f, indent=2)
         except:
             pass
+    
+    def load_venv_settings(self):
+        """Load virtual environment settings"""
+        try:
+            if os.path.exists('venv_settings.json'):
+                with open('venv_settings.json', 'r', encoding='utf-8') as f:
+                    return json.load(f)
+        except Exception as e:
+            print(f"Error loading venv settings: {e}")
+        return {'venv_path': '.venv', 'use_custom_path': False}
+    
+    def save_venv_settings(self, venv_path, use_custom_path):
+        """Save virtual environment settings"""
+        try:
+            settings = {
+                'venv_path': venv_path,
+                'use_custom_path': use_custom_path
+            }
+            with open('venv_settings.json', 'w', encoding='utf-8') as f:
+                json.dump(settings, f, indent=2)
+        except Exception as e:
+            print(f"Error saving venv settings: {e}")
+    
+    def browse_venv_path(self, path_var):
+        """Browse for virtual environment directory"""
+        from tkinter import filedialog
+        initial_dir = path_var.get()
+        if not os.path.isabs(initial_dir):
+            initial_dir = os.getcwd()
+        
+        folder_path = filedialog.askdirectory(
+            title="Select Virtual Environment Directory",
+            initialdir=initial_dir
+        )
+        
+        if folder_path:
+            path_var.set(folder_path)
+    
+    def copy_to_clipboard(self, text):
+        """Copy text to clipboard"""
+        try:
+            self.root.clipboard_clear()
+            self.root.clipboard_append(text)
+            # Show temporary feedback
+            temp_label = tk.Label(self.root, text="✓ Copied to clipboard", 
+                               bg=theme['accent'], fg='white',
+                               font=(system_fonts['ui_font'], 10))
+            temp_label.place(x=10, y=10)
+            self.root.after(2000, temp_label.destroy)
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to copy to clipboard: {e}")
+    
+    def parse_error(self, error_output, code_content):
+        """Parse error output to extract line number and error type"""
+        error_info = {
+            'line_number': None,
+            'error_type': None,
+            'error_message': error_output,
+            'suggestions': []
+        }
+        
+        # Common Python error patterns
+        patterns = [
+            # Syntax errors
+            r'SyntaxError: (.+) at line (\d+)',
+            r'File ".*", line (\d+)',
+            r'.*line (\d+).*SyntaxError: (.+)',
+            
+            # Indentation errors
+            r'IndentationError: (.+) at line (\d+)',
+            r'.*line (\d+).*IndentationError: (.+)',
+            
+            # Name errors
+            r'NameError: name \'(.+)\' is not defined',
+            r'.*line (\d+).*NameError: name \'(.+)\' is not defined',
+            
+            # Type errors
+            r'TypeError: (.+)',
+            r'.*line (\d+).*TypeError: (.+)',
+            
+            # Attribute errors
+            r'AttributeError: (.+)',
+            r'.*line (\d+).*AttributeError: (.+)',
+            
+            # Import errors
+            r'ImportError: (.+)',
+            r'ModuleNotFoundError: No module named \'(.+)\'',
+            
+            # Zero division errors
+            r'ZeroDivisionError: (.+)',
+            r'.*line (\d+).*ZeroDivisionError: (.+)',
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, error_output, re.IGNORECASE)
+            if match:
+                if 'line' in pattern.lower():
+                    # Extract line number
+                    if len(match.groups()) >= 2:
+                        if match.group(1).isdigit():
+                            error_info['line_number'] = int(match.group(1))
+                            error_info['error_type'] = match.group(2)
+                        else:
+                            error_info['line_number'] = int(match.group(2))
+                            error_info['error_type'] = match.group(1)
+                    else:
+                        error_info['line_number'] = int(match.group(1))
+                        error_info['error_type'] = 'Syntax Error'
+                else:
+                    # Module not found error
+                    if 'ModuleNotFoundError' in pattern or 'ImportError' in pattern:
+                        error_info['error_type'] = 'Import Error'
+                        error_info['suggestions'].append(f"Try installing: pip install {match.group(1)}")
+                break
+        
+        # Generate suggestions based on error type
+        if error_info['error_type']:
+            error_type = error_info['error_type'].lower()
+            
+            if 'syntax' in error_type:
+                error_info['suggestions'].extend([
+                    "Check for missing colons, brackets, or quotes",
+                    "Verify proper indentation",
+                    "Check for unmatched parentheses"
+                ])
+            elif 'indentation' in error_type:
+                error_info['suggestions'].extend([
+                    "Use consistent indentation (4 spaces recommended)",
+                    "Check for mixed tabs and spaces",
+                    "Verify proper indentation levels"
+                ])
+            elif 'name' in error_type:
+                error_info['suggestions'].extend([
+                    "Check variable name spelling",
+                    "Ensure variable is defined before use",
+                    "Check import statements"
+                ])
+            elif 'type' in error_type:
+                error_info['suggestions'].extend([
+                    "Check data types of variables",
+                    "Use type conversion functions (int(), str(), etc.)",
+                    "Verify function arguments"
+                ])
+            elif 'attribute' in error_type:
+                error_info['suggestions'].extend([
+                    "Check object attribute name spelling",
+                    "Verify object type and available methods",
+                    "Check import statements for required modules"
+                ])
+        
+        return error_info
+    
+    def fix_common_errors(self, code_content, error_info):
+        """Attempt to fix common errors automatically"""
+        if not error_info['line_number'] or not error_info['error_type']:
+            return code_content, False
+        
+        lines = code_content.split('\n')
+        line_num = error_info['line_number'] - 1  # Convert to 0-based index
+        
+        if line_num < 0 or line_num >= len(lines):
+            return code_content, False
+        
+        original_line = lines[line_num]
+        fixed_line = original_line
+        fixed = False
+        
+        error_type = error_info['error_type'].lower()
+        
+        # Fix common syntax errors
+        if 'syntax' in error_type or 'indentation' in error_type:
+            # Add missing colon at end of if/for/while/def/class statements
+            if any(keyword in original_line for keyword in ['if ', 'for ', 'while ', 'def ', 'class ']) and not original_line.rstrip().endswith(':'):
+                fixed_line = original_line.rstrip() + ':'
+                fixed = True
+            
+            # Fix missing quotes
+            if original_line.count('"') % 2 != 0 or original_line.count("'") % 2 != 0:
+                if original_line.count('"') % 2 != 0:
+                    fixed_line = original_line.rstrip() + '"'
+                elif original_line.count("'") % 2 != 0:
+                    fixed_line = original_line.rstrip() + "'"
+                fixed = True
+            
+            # Fix unmatched parentheses
+            if original_line.count('(') != original_line.count(')'):
+                missing = original_line.count('(') - original_line.count(')')
+                if missing > 0:
+                    fixed_line = original_line.rstrip() + ')' * missing
+                else:
+                    fixed_line = original_line.rstrip() + '(' * (-missing)
+                fixed = True
+        
+        # Fix indentation errors
+        if 'indentation' in error_type:
+            # Fix inconsistent indentation
+            if line_num > 0:
+                prev_line = lines[line_num - 1]
+                if prev_line.endswith(':') and not original_line.startswith('    '):
+                    fixed_line = '    ' + original_line
+                    fixed = True
+                elif original_line.startswith('    ') and not prev_line.endswith(':'):
+                    # Check if this line should not be indented
+                    if any(keyword in original_line for keyword in ['def ', 'class ', 'if ', 'for ', 'while ']):
+                        fixed_line = original_line[4:]  # Remove indentation
+                        fixed = True
+        
+        # Apply fix if made
+        if fixed:
+            lines[line_num] = fixed_line
+            return '\n'.join(lines), True
+        
+        return code_content, False
+    
+    def show_error_dialog(self, error_output, code_content, tab=None):
+        """Show detailed error dialog with fix options"""
+        error_info = self.parse_error(error_output, code_content)
+        
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Error Analysis & Fix")
+        dialog.geometry("600x500")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        theme = THEMES[current_theme]
+        dialog.configure(bg=theme['bg'])
+        
+        # Error information frame
+        info_frame = tk.Frame(dialog, bg=theme['bg'])
+        info_frame.pack(pady=10, padx=20, fill=tk.X)
+        
+        tk.Label(info_frame, text="Error Analysis:", bg=theme['bg'], fg=theme['fg'],
+                font=(system_fonts['ui_font'], 10, 'bold')).pack(anchor=tk.W)
+        
+        # Line number
+        if error_info['line_number']:
+            tk.Label(info_frame, text=f"Line: {error_info['line_number']}", 
+                    bg=theme['bg'], fg=theme['fg_secondary'],
+                    font=(system_fonts['ui_font'], 9)).pack(anchor=tk.W, pady=2)
+        
+        # Error type
+        if error_info['error_type']:
+            tk.Label(info_frame, text=f"Type: {error_info['error_type']}", 
+                    bg=theme['bg'], fg=theme['fg_secondary'],
+                    font=(system_fonts['ui_font'], 9)).pack(anchor=tk.W, pady=2)
+        
+        # Error message
+        msg_frame = tk.Frame(info_frame, bg=theme['bg'])
+        msg_frame.pack(fill=tk.X, pady=5)
+        
+        tk.Label(msg_frame, text="Message:", bg=theme['bg'], fg=theme['fg'],
+                font=(system_fonts['ui_font'], 9)).pack(side=tk.LEFT)
+        
+        copy_btn = tk.Button(msg_frame, text="📋 Copy", 
+                           command=lambda: self.copy_to_clipboard(error_output),
+                           bg=theme['bg_secondary'], fg=theme['fg'],
+                           font=(system_fonts['ui_font'], 9))
+        copy_btn.pack(side=tk.RIGHT, padx=5)
+        
+        # Error message display
+        error_text = tk.Text(info_frame, height=4, font=(system_fonts['ui_font'], 10),
+                           bg=theme['bg_secondary'], fg=theme['fg'], wrap=tk.WORD)
+        error_text.pack(fill=tk.X, pady=5)
+        error_text.insert('1.0', error_output)
+        error_text.config(state=tk.DISABLED)
+        
+        # Suggestions
+        if error_info['suggestions']:
+            tk.Label(info_frame, text="Suggestions:", bg=theme['bg'], fg=theme['fg'],
+                    font=(system_fonts['ui_font'], 9, 'bold')).pack(anchor=tk.W, pady=(10, 2))
+            
+            for suggestion in error_info['suggestions']:
+                tk.Label(info_frame, text=f"• {suggestion}", 
+                        bg=theme['bg'], fg=theme['fg_secondary'],
+                        font=(system_fonts['ui_font'], 10)).pack(anchor=tk.W, padx=10)
+        
+        # Code preview
+        if error_info['line_number']:
+            tk.Label(info_frame, text="Code Preview (Line {}):".format(error_info['line_number']), 
+                    bg=theme['bg'], fg=theme['fg'],
+                    font=(system_fonts['ui_font'], 9, 'bold')).pack(anchor=tk.W, pady=(10, 2))
+            
+            code_lines = code_content.split('\n')
+            start_line = max(0, error_info['line_number'] - 3)
+            end_line = min(len(code_lines), error_info['line_number'] + 2)
+            
+            code_text = tk.Text(info_frame, height=6, font=(system_fonts['ui_font'], 10),
+                               bg=theme['bg_secondary'], fg=theme['fg'])
+            code_text.pack(fill=tk.X, pady=5)
+            
+            for i in range(start_line, end_line):
+                line_num = i + 1
+                prefix = ">>> " if line_num == error_info['line_number'] else "    "
+                code_text.insert(tk.END, f"{prefix}{line_num:3d}: {code_lines[i]}\n")
+            
+            code_text.config(state=tk.DISABLED)
+        
+        # Action buttons
+        button_frame = tk.Frame(dialog, bg=theme['bg'])
+        button_frame.pack(pady=20, padx=20, fill=tk.X)
+        
+        # Try to fix automatically
+        if error_info['line_number'] and tab:
+            try:
+                fixed_code, was_fixed = self.fix_common_errors(code_content, error_info)
+                if was_fixed:
+                    fix_btn = tk.Button(button_frame, text="🔧 Auto Fix", 
+                                     command=lambda: self.apply_fix(tab, fixed_code, dialog),
+                                     bg=theme['accent'], fg='white',
+                                     font=(system_fonts['ui_font'], 9))
+                    fix_btn.pack(side=tk.LEFT, padx=5)
+            except:
+                pass
+        
+        # Go to line
+        if error_info['line_number'] and tab:
+            goto_btn = tk.Button(button_frame, text="📍 Go to Line", 
+                               command=lambda: self.go_to_line(tab, error_info['line_number'], dialog),
+                               bg=theme['bg_secondary'], fg=theme['fg'],
+                               font=(system_fonts['ui_font'], 9))
+            goto_btn.pack(side=tk.LEFT, padx=5)
+        
+        # Close
+        close_btn = tk.Button(button_frame, text="Close", command=dialog.destroy,
+                            bg=theme['bg_secondary'], fg=theme['fg'],
+                            font=(system_fonts['ui_font'], 9))
+        close_btn.pack(side=tk.RIGHT, padx=5)
+    
+    def apply_fix(self, tab, fixed_code, dialog):
+        """Apply the automatic fix to the code"""
+        try:
+            tab.text.delete('1.0', tk.END)
+            tab.text.insert('1.0', fixed_code)
+            dialog.destroy()
+            messagebox.showinfo("Success", "Error has been automatically fixed!")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to apply fix: {e}")
+    
+    def go_to_line(self, tab, line_number, dialog):
+        """Go to specific line in code"""
+        try:
+            # Close dialog first
+            dialog.destroy()
+            
+            # Switch to the tab if not active
+            global active_tab
+            if tab != active_tab:
+                self.notebook.select(self.tabs.index(tab))
+                active_tab = tab
+            
+            # Go to line
+            line_start = f"{line_number}.0"
+            tab.text.mark_set(tk.INSERT, line_start)
+            tab.text.see(line_start)
+            tab.text.focus_set()
+            
+            # Highlight the line temporarily
+            original_bg = tab.text.cget('bg')
+            tab.text.tag_add('error_line', line_start, f"{line_number}.end")
+            tab.text.tag_config('error_line', background='#ffcccc')
+            
+            # Remove highlight after 3 seconds
+            self.root.after(3000, lambda: tab.text.tag_remove('error_line', line_start, f"{line_number}.end"))
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to go to line: {e}")
     
     def run(self):
         self.root.mainloop()

@@ -8,6 +8,7 @@ Mini IDE - Modern Japanese Version V2
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import subprocess
+import threading
 import sys
 import re
 import locale
@@ -416,6 +417,7 @@ class ModernIDE:
             ("🎨", "整形", self.format_code, ""),
             ("✅", "確認", self.check_syntax, ""),
             ("🔧", "修正", self.auto_fix, ""),
+            ("📦", "インスト", self.install_module, "Ctrl+I"),
             ("▶️", "実行", self.run_code, "F5"),
             ("🌙", "テーマ", self.toggle_theme, "Ctrl+T"),
             ("⚙️", "設定", self.show_settings, ""),
@@ -426,18 +428,18 @@ class ModernIDE:
                 self.toolbar,
                 text=f"{icon}\n{label}",
                 command=command,
-                font=(system_fonts['ui_font'], 9),
+                font=(system_fonts['ui_font'], 10),
                 bg=theme['toolbar_bg'],
                 fg=theme['fg'],
                 relief=tk.FLAT,
                 borderwidth=0,
-                padx=6,
-                pady=4,
+                padx=4,
+                pady=3,
                 cursor='hand2',
-                width=6,
+                width=8,
                 height=2
             )
-            btn.pack(side=tk.LEFT, padx=2, pady=5)
+            btn.pack(side=tk.LEFT, padx=1, pady=3)
             
             # ツールチップを追加（説明とショートカット）
             tooltip_text = f"{label}"
@@ -861,16 +863,21 @@ class ModernIDE:
         # 簡単な検索ダイアログ実装
         dialog = tk.Toplevel(self.root)
         dialog.title(t('find'))
-        dialog.geometry("300x100")
+        dialog.geometry("400x150")
         dialog.resizable(False, False)
         
         theme = THEMES[current_theme]
         dialog.configure(bg=theme['bg'])
         
-        tk.Label(dialog, text=t('search'), bg=theme['bg'], fg=theme['fg']).pack(pady=5)
+        # Main frame with padding
+        main_frame = tk.Frame(dialog, bg=theme['bg'])
+        main_frame.pack(pady=10, padx=15, fill=tk.BOTH, expand=True)
         
-        entry = tk.Entry(dialog, font=(system_fonts['ui_font'], 10))
-        entry.pack(pady=5, padx=10, fill=tk.X)
+        tk.Label(main_frame, text=t('search'), bg=theme['bg'], fg=theme['fg'],
+                font=(system_fonts['ui_font'], 10)).pack(pady=5)
+        
+        entry = tk.Entry(main_frame, font=(system_fonts['ui_font'], 10))
+        entry.pack(pady=5, fill=tk.X)
         entry.focus_set()
         
         def find_next():
@@ -885,31 +892,39 @@ class ModernIDE:
                 else:
                     messagebox.showinfo(t('info'), t('search_not_found'))
         
-        button_frame = tk.Frame(dialog, bg=theme['bg'])
+        button_frame = tk.Frame(main_frame, bg=theme['bg'])
         button_frame.pack(pady=10)
         
         tk.Button(button_frame, text=t('find_next'), command=find_next, 
-                 bg=theme['accent'], fg='white').pack(side=tk.LEFT, padx=5)
+                 bg=theme['accent'], fg='white', font=(system_fonts['ui_font'], 9),
+                 padx=15, pady=5).pack(side=tk.LEFT, padx=5)
         tk.Button(button_frame, text=t('close'), command=dialog.destroy,
-                 bg=theme['bg_secondary'], fg=theme['fg']).pack(side=tk.LEFT, padx=5)
+                 bg=theme['bg_secondary'], fg=theme['fg'], font=(system_fonts['ui_font'], 9),
+                 padx=15, pady=5).pack(side=tk.LEFT, padx=5)
     
     def show_replace_dialog(self):
         # 簡単な置換ダイアログ実装
         dialog = tk.Toplevel(self.root)
         dialog.title(t('replace'))
-        dialog.geometry("350x150")
+        dialog.geometry("450x200")
         dialog.resizable(False, False)
         
         theme = THEMES[current_theme]
         dialog.configure(bg=theme['bg'])
         
-        tk.Label(dialog, text=t('find'), bg=theme['bg'], fg=theme['fg']).pack(pady=5)
-        find_entry = tk.Entry(dialog, font=(system_fonts['ui_font'], 10))
-        find_entry.pack(pady=5, padx=10, fill=tk.X)
+        # Main frame with padding
+        main_frame = tk.Frame(dialog, bg=theme['bg'])
+        main_frame.pack(pady=10, padx=15, fill=tk.BOTH, expand=True)
         
-        tk.Label(dialog, text=t('replace'), bg=theme['bg'], fg=theme['fg']).pack(pady=5)
-        replace_entry = tk.Entry(dialog, font=(system_fonts['ui_font'], 10))
-        replace_entry.pack(pady=5, padx=10, fill=tk.X)
+        tk.Label(main_frame, text=t('find'), bg=theme['bg'], fg=theme['fg'],
+                font=(system_fonts['ui_font'], 10)).pack(pady=5)
+        find_entry = tk.Entry(main_frame, font=(system_fonts['ui_font'], 10))
+        find_entry.pack(pady=5, fill=tk.X)
+        
+        tk.Label(main_frame, text=t('replace'), bg=theme['bg'], fg=theme['fg'],
+                font=(system_fonts['ui_font'], 10)).pack(pady=5)
+        replace_entry = tk.Entry(main_frame, font=(system_fonts['ui_font'], 10))
+        replace_entry.pack(pady=5, fill=tk.X)
         
         def replace_all():
             find_text = find_entry.get()
@@ -922,13 +937,15 @@ class ModernIDE:
                 count = content.count(find_text)
                 messagebox.showinfo(t('success'), f"{count} {t('replace_count')}")
         
-        button_frame = tk.Frame(dialog, bg=theme['bg'])
+        button_frame = tk.Frame(main_frame, bg=theme['bg'])
         button_frame.pack(pady=10)
         
         tk.Button(button_frame, text=t('replace_all'), command=replace_all,
-                 bg=theme['accent'], fg='white').pack(side=tk.LEFT, padx=5)
+                 bg=theme['accent'], fg='white', font=(system_fonts['ui_font'], 9),
+                 padx=15, pady=5).pack(side=tk.LEFT, padx=5)
         tk.Button(button_frame, text=t('close'), command=dialog.destroy,
-                 bg=theme['bg_secondary'], fg=theme['fg']).pack(side=tk.LEFT, padx=5)
+                 bg=theme['bg_secondary'], fg=theme['fg'], font=(system_fonts['ui_font'], 9),
+                 padx=15, pady=5).pack(side=tk.LEFT, padx=5)
     
     def format_code(self):
         if not active_tab:
@@ -1047,6 +1064,14 @@ class ModernIDE:
                         text_widget.insert(tk.END, f"出力:\n{result.stdout}\n")
                     if result.stderr:
                         text_widget.insert(tk.END, f"エラー:\n{result.stderr}\n")
+                        # エラー解析ダイアログを表示
+                        self.show_error_dialog(result.stderr, active_tab.get_content(), active_tab)
+                    
+                    # 自動終了機能
+                    auto_close_setting = getattr(self, 'auto_close_setting', 'never')
+                    if auto_close_setting != 'never':
+                        close_delay = int(auto_close_setting) * 1000  # ミリ秒に変換
+                        output_window.after(close_delay, output_window.destroy)
                     
                     # 一時ファイルをクリーンアップ
                     os.unlink(temp_file.name)
@@ -1059,49 +1084,394 @@ class ModernIDE:
         except Exception as e:
             messagebox.showerror(t('error'), f"{t('run_failed')}: {e}")
     
+    def parse_imports(self, code):
+        """Pythonコードを解析してimport文を抽出"""
+        imports = set()
+        
+        # 異なるimportパターンの正規表現
+        patterns = [
+            r'^import\s+([a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*)',  # import module
+            r'^from\s+([a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*)\s+import',  # from module import
+        ]
+        
+        for line in code.split('\n'):
+            line = line.strip()
+            if line.startswith('#') or not line:
+                continue
+                
+            for pattern in patterns:
+                match = re.match(pattern, line)
+                if match:
+                    module_name = match.group(1)
+                    # トップレベルパッケージ名を取得
+                    top_level = module_name.split('.')[0]
+                    # 標準ライブラリモジュールをスキップ
+                    if top_level not in self.get_stdlib_modules():
+                        imports.add(top_level)
+                    break
+        
+        return list(imports)
+    
+    def get_stdlib_modules(self):
+        """スキップする標準ライブラリモジュールのリスト"""
+        return {
+            'os', 'sys', 're', 'json', 'time', 'datetime', 'math', 'random',
+            'collections', 'itertools', 'functools', 'operator', 'pathlib',
+            'urllib', 'http', 'email', 'html', 'xml', 'sqlite3', 'csv',
+            'configparser', 'logging', 'unittest', 'argparse', 'subprocess',
+            'threading', 'multiprocessing', 'socket', 'ssl', 'hashlib',
+            'hmac', 'base64', 'uuid', 'tempfile', 'shutil', 'glob',
+            'fnmatch', 'pickle', 'struct', 'array', 'bisect', 'heapq',
+            'queue', 'weakref', 'copy', 'pprint', 'repr', 'stringio',
+            'io', 'fractions', 'decimal', 'statistics', 'enum',
+            'typing', 'contextlib', 'abc', 'inspect', 'dis', 'importlib',
+            'pkgutil', 'modulefinder', 'runpy', 'site', 'user',
+            'platform', 'locale', 'codecs', 'encodings', 'textwrap',
+            'unicodedata', 'stringprep', 'readline', 'rlcompleter',
+            'cmd', 'shlex', 'tokenize', 'keyword', 'token', 'ast',
+            'symbol', 'parser', 'py_compile', 'compileall', 'distutils',
+            'ensurepip', 'venv', 'zipapp', 'msvcrt', 'winsound',
+            'posix', 'pwd', 'spwd', 'grp', 'crypt', 'termios', 'tty',
+            'pty', 'fcntl', 'pipes', 'resource', 'nis', 'syslog',
+            'select', 'selectors', 'signal', 'mmap', 'ctypes',
+            'curses', 'turtle', 'tkinter', 'idlelib', 'test',
+            'webbrowser', 'mailcap', 'mailbox', 'mimetypes', 'uu',
+            'xdrlib', 'imaplib', 'poplib', 'smtplib', 'nntplib',
+            'telnetlib', 'ftplib', 'gzip', 'bz2', 'lzma', 'zipfile',
+            'tarfile', 'shelve', 'dbm', 'sqlite3', 'decimal',
+            'fractions', 'statistics', 'queue', 'asyncio',
+            'concurrent', 'multiprocessing', 'socketserver',
+            'http', 'urllib', 'email', 'xml', 'html', 'websockets',
+            'wsgiref', 'xmlrpc', 'ipaddress', 'ssl', 'hashlib',
+            'hmac', 'secrets', 'uuid', 'base64', 'binascii',
+            'quopri', 'uu', 'xdrlib', 'struct', 'code', 'codeop',
+            'dis', 'pickletools', 'marshal', 'importlib', 'pkgutil',
+            'modulefinder', 'runpy', 'parser', 'ast', 'symbol',
+            'token', 'keyword', 'tokenize', 'tabnanny', 'pyclbr',
+            'py_compile', 'compileall', 'distutils', 'ensurepip',
+            'venv', 'zipapp', 'site', 'user', 'pydoc', 'doctest',
+            'unittest', 'test', 'bdb', 'pdb', 'profile', 'pstats',
+            'timeit', 'trace', 'tracemalloc', 'gc', 'weakref',
+            'copy', 'copyreg', 'pprint', 'repr', 'enum', 'types',
+            'dataclasses', 'typing', 'contextlib', 'abc', 'atexit',
+            'traceback', 'faulthandler', 'sysconfig', 'platform',
+            'errno', 'stat', 'filecmp', 'fileinput', 'glob',
+            'fnmatch', 'linecache', 'shutil', 'tempfile', 'glob',
+            'os', 'os.path', 'time', 'argparse', 'getopt', 'logging',
+            'getpass', 'curses', 'platform', 'errno', 'ctypes'
+        }
+    
+    def install_module(self):
+        """コードから自動的にPythonモジュールをインストール"""
+        dialog = tk.Toplevel(self.root)
+        dialog.title("自動モジュールインストーラー")
+        dialog.geometry("600x500")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        theme = THEMES[current_theme]
+        dialog.configure(bg=theme['bg'])
+        
+        # Main frame with padding
+        main_frame = tk.Frame(dialog, bg=theme['bg'])
+        main_frame.pack(pady=15, padx=20, fill=tk.BOTH, expand=True)
+        
+        # Title
+        tk.Label(main_frame, text="🔍 自動モジュール検出とインストール", 
+                bg=theme['bg'], fg=theme['fg'], 
+                font=(system_fonts['ui_font'], 14, 'bold')).pack(pady=10)
+        
+        tk.Label(main_frame, text="コード内の不足モジュールをスキャン中...", 
+                bg=theme['bg'], fg=theme['fg'], 
+                font=(system_fonts['ui_font'], 12)).pack(pady=5)
+        
+        # 自動モード - 検出されたモジュールリスト
+        auto_frame = tk.Frame(main_frame, bg=theme['bg'])
+        auto_frame.pack(pady=10, fill=tk.BOTH, expand=True)
+        
+        tk.Label(auto_frame, text="📦 インストール対象モジュール:", bg=theme['bg'], fg=theme['fg'], 
+                font=(system_fonts['ui_font'], 12, 'bold')).pack(anchor=tk.W)
+        
+        # 検出されたモジュールのリストボックス
+        list_frame = tk.Frame(auto_frame, bg=theme['bg'])
+        list_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        
+        scrollbar = tk.Scrollbar(list_frame)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        modules_listbox = tk.Listbox(list_frame, font=(system_fonts['ui_font'], 11),
+                                    bg=theme['bg_secondary'], fg=theme['fg'],
+                                    yscrollcommand=scrollbar.set, selectmode=tk.MULTIPLE)
+        modules_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.config(command=modules_listbox.yview)
+        
+        # 保存済み仮想環境設定を読み込み
+        venv_settings = self.load_venv_settings()
+        
+        # 仮想環境設定
+        venv_frame = tk.Frame(main_frame, bg=theme['bg'])
+        venv_frame.pack(pady=10, padx=15, fill=tk.X)
+        
+        use_venv = tk.BooleanVar(value=True)
+        venv_check = tk.Checkbutton(venv_frame, text="🐍 仮想環境を使用", 
+                                   variable=use_venv, bg=theme['bg'], fg=theme['fg'],
+                                   font=(system_fonts['ui_font'], 11))
+        venv_check.pack(anchor=tk.W, pady=5)
+        
+        # 仮想環境パス設定
+        path_frame = tk.Frame(venv_frame, bg=theme['bg'])
+        path_frame.pack(fill=tk.X, pady=8)
+        
+        use_custom_path = tk.BooleanVar(value=venv_settings.get('use_custom_path', False))
+        custom_check = tk.Checkbutton(path_frame, text="📁 カスタムパス:", 
+                                     variable=use_custom_path, bg=theme['bg'], fg=theme['fg'],
+                                     font=(system_fonts['ui_font'], 10))
+        custom_check.pack(side=tk.LEFT, padx=(0, 10))
+        
+        venv_path_var = tk.StringVar(value=venv_settings.get('venv_path', '.venv'))
+        venv_path_entry = tk.Entry(path_frame, textvariable=venv_path_var, 
+                                  font=(system_fonts['ui_font'], 10),
+                                  bg=theme['bg_secondary'], fg=theme['fg'])
+        venv_path_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        
+        browse_btn = tk.Button(path_frame, text="📂 参照", 
+                             command=lambda: self.browse_venv_path(venv_path_var),
+                             bg=theme['bg_secondary'], fg=theme['fg'],
+                             font=(system_fonts['ui_font'], 9))
+        browse_btn.pack(side=tk.RIGHT)
+        
+        # ステータスラベル
+        status_label = tk.Label(main_frame, text="", bg=theme['bg'], fg=theme['fg_secondary'],
+                               font=(system_fonts['ui_font'], 11), wraplength=500)
+        status_label.pack(pady=8, padx=15, fill=tk.X)
+        
+        def detect_modules():
+            if not active_tab:
+                modules_listbox.delete(0, tk.END)
+                status_label.configure(text="📄 解析するコードファイルがありません")
+                return
+            
+            code = active_tab.get_content()
+            modules = self.parse_imports(code)
+            modules_listbox.delete(0, tk.END)
+            
+            if modules:
+                for module in modules:
+                    modules_listbox.insert(tk.END, module)
+                status_label.configure(text=f"✅ {len(modules)}個のモジュールを検出しました")
+            else:
+                status_label.configure(text="ℹ️ 外部モジュールは検出されませんでした")
+        
+        def install():
+            selected_indices = modules_listbox.curselection()
+            if not selected_indices:
+                status_label.configure(text="⚠️ インストールするモジュールを選択してください")
+                return
+            
+            modules_to_install = [modules_listbox.get(i) for i in selected_indices]
+            status_label.configure(text="🔄 インストール中...")
+            dialog.update()
+            
+            def install_in_thread():
+                try:
+                    if use_venv.get():
+                        # 仮想環境パスを取得
+                        if use_custom_path.get():
+                            venv_path = venv_path_var.get()
+                            if not os.path.isabs(venv_path):
+                                venv_path = os.path.join(os.getcwd(), venv_path)
+                        else:
+                            venv_path = os.path.join(os.getcwd(), ".venv")
+                        
+                        # 設定を保存
+                        self.save_venv_settings(venv_path_var.get(), use_custom_path.get())
+                        
+                        # 仮想環境が存在しない場合は作成
+                        if not os.path.exists(venv_path):
+                            status_label.configure(text=f"{venv_path} に仮想環境を作成中...")
+                            dialog.update()
+                            subprocess.run([sys.executable, "-m", "venv", venv_path], 
+                                         check=True, capture_output=True)
+                        
+                        # 仮想環境のpipパスを取得
+                        if os.name == 'nt':  # Windows
+                            pip_path = os.path.join(venv_path, "Scripts", "pip")
+                        else:  # Unix
+                            pip_path = os.path.join(venv_path, "bin", "pip")
+                        
+                        # 仮想環境にモジュールをインストール
+                        for module in modules_to_install:
+                            status_label.configure(text=f"{module} を {venv_path} にインストール中...")
+                            dialog.update()
+                            result = subprocess.run([pip_path, "install", module], 
+                                                  capture_output=True, text=True, timeout=300)
+                            if result.returncode != 0:
+                                error_msg = f"❌ {module} のインストール失敗: {result.stderr}"
+                                status_label.configure(text=error_msg)
+                                # エラー用コピーを追加
+                                error_frame = tk.Frame(dialog, bg=theme['bg'])
+                                error_frame.pack(pady=5, padx=20, fill=tk.X)
+                                
+                                tk.Label(error_frame, text="エラーが発生:", 
+                                        bg=theme['bg'], fg=theme['fg'],
+                                        font=(system_fonts['ui_font'], 9)).pack(side=tk.LEFT)
+                                
+                                copy_btn = tk.Button(error_frame, text="📋 コピー", 
+                                                  command=lambda: self.copy_to_clipboard(error_msg),
+                                                  bg=theme['bg_secondary'], fg=theme['fg'],
+                                                  font=(system_fonts['ui_font'], 10))
+                                copy_btn.pack(side=tk.RIGHT, padx=5)
+                                return
+                    else:
+                        # 現在の環境にインストール
+                        for module in modules_to_install:
+                            status_label.configure(text=f"{module} をインストール中...")
+                            dialog.update()
+                            result = subprocess.run([sys.executable, "-m", "pip", "install", module], 
+                                                  capture_output=True, text=True, timeout=300)
+                            if result.returncode != 0:
+                                error_msg = f"❌ {module} のインストール失敗: {result.stderr}"
+                                status_label.configure(text=error_msg)
+                                # エラー用コピーを追加
+                                error_frame = tk.Frame(dialog, bg=theme['bg'])
+                                error_frame.pack(pady=5, padx=20, fill=tk.X)
+                                
+                                tk.Label(error_frame, text="エラーが発生:", 
+                                        bg=theme['bg'], fg=theme['fg'],
+                                        font=(system_fonts['ui_font'], 9)).pack(side=tk.LEFT)
+                                
+                                copy_btn = tk.Button(error_frame, text="📋 コピー", 
+                                                  command=lambda: self.copy_to_clipboard(error_msg),
+                                                  bg=theme['bg_secondary'], fg=theme['fg'],
+                                                  font=(system_fonts['ui_font'], 10))
+                                copy_btn.pack(side=tk.RIGHT, padx=5)
+                                return
+                    
+                    status_label.configure(text=f"✅ 正常にインストール完了: {', '.join(modules_to_install)}")
+                        
+                except subprocess.TimeoutExpired:
+                    error_msg = "❌ インストールがタイムアウトしました"
+                    status_label.configure(text=error_msg)
+                    # タイムアウトエラー用コピーを追加
+                    error_frame = tk.Frame(dialog, bg=theme['bg'])
+                    error_frame.pack(pady=5, padx=20, fill=tk.X)
+                    
+                    tk.Label(error_frame, text="タイムアウト:", 
+                            bg=theme['bg'], fg=theme['fg'],
+                            font=(system_fonts['ui_font'], 9)).pack(side=tk.LEFT)
+                    
+                    copy_btn = tk.Button(error_frame, text="📋 コピー", 
+                                      command=lambda: self.copy_to_clipboard(error_msg),
+                                      bg=theme['bg_secondary'], fg=theme['fg'],
+                                      font=(system_fonts['ui_font'], 10))
+                    copy_btn.pack(side=tk.RIGHT, padx=5)
+                except Exception as e:
+                    error_msg = f"❌ エラー: {str(e)}"
+                    status_label.configure(text=error_msg)
+                    # 一般エラー用コピーを追加
+                    error_frame = tk.Frame(dialog, bg=theme['bg'])
+                    error_frame.pack(pady=5, padx=20, fill=tk.X)
+                    
+                    tk.Label(error_frame, text="一般エラー:", 
+                            bg=theme['bg'], fg=theme['fg'],
+                            font=(system_fonts['ui_font'], 9)).pack(side=tk.LEFT)
+                    
+                    copy_btn = tk.Button(error_frame, text="📋 コピー", 
+                                      command=lambda: self.copy_to_clipboard(error_msg),
+                                      bg=theme['bg_secondary'], fg=theme['fg'],
+                                      font=(system_fonts['ui_font'], 10))
+                    copy_btn.pack(side=tk.RIGHT, padx=5)
+            
+            # 別スレッドでインストールを実行
+            threading.Thread(target=install_in_thread, daemon=True).start()
+        
+        # 自動的にモジュールを検出
+        detect_modules()
+        
+        # ボタン
+        button_frame = tk.Frame(main_frame, bg=theme['bg'])
+        button_frame.pack(pady=15)
+        
+        tk.Button(button_frame, text="🚀 選択したものをインストール", command=install,
+                 bg=theme['accent'], fg='white', font=(system_fonts['ui_font'], 11, 'bold'),
+                 padx=20, pady=8).pack(side=tk.LEFT, padx=8)
+        
+        tk.Button(button_frame, text="🔄 更新", command=detect_modules,
+                 bg=theme['bg_secondary'], fg=theme['fg'], font=(system_fonts['ui_font'], 11),
+                 padx=20, pady=8).pack(side=tk.LEFT, padx=8)
+        
+        tk.Button(button_frame, text="❌ 閉じる", command=dialog.destroy,
+                 bg=theme['bg_secondary'], fg=theme['fg'], font=(system_fonts['ui_font'], 11),
+                 padx=20, pady=8).pack(side=tk.LEFT, padx=8)
+        
+        # Enterキーをインストールにバインド
+        dialog.bind('<Return>', lambda e: install())
+    
     def show_settings(self):
         # 設定ダイアログ実装
         dialog = tk.Toplevel(self.root)
         dialog.title(t('settings'))
-        dialog.geometry("400x300")
+        dialog.geometry("450x400")
         dialog.resizable(False, False)
         
         theme = THEMES[current_theme]
         dialog.configure(bg=theme['bg'])
         
+        # Main frame with padding
+        main_frame = tk.Frame(dialog, bg=theme['bg'])
+        main_frame.pack(pady=10, padx=15, fill=tk.BOTH, expand=True)
+        
         # テーマ選択
-        tk.Label(dialog, text=t('theme'), bg=theme['bg'], fg=theme['fg']).pack(pady=10)
+        tk.Label(main_frame, text=t('theme'), bg=theme['bg'], fg=theme['fg'],
+                font=(system_fonts['ui_font'], 10)).pack(pady=10)
         
         theme_var = tk.StringVar(value=current_theme)
-        tk.Radiobutton(dialog, text=t('dark_theme'), variable=theme_var, value='dark',
+        tk.Radiobutton(main_frame, text=t('dark_theme'), variable=theme_var, value='dark',
                      bg=theme['bg'], fg=theme['fg'], selectcolor=theme['fg']).pack()
-        tk.Radiobutton(dialog, text=t('light_theme'), variable=theme_var, value='light',
+        tk.Radiobutton(main_frame, text=t('light_theme'), variable=theme_var, value='light',
                      bg=theme['bg'], fg=theme['fg'], selectcolor=theme['fg']).pack()
         
         # フォントサイズ
-        tk.Label(dialog, text=t('font_size'), bg=theme['bg'], fg=theme['fg']).pack(pady=10)
+        tk.Label(main_frame, text=t('font_size'), bg=theme['bg'], fg=theme['fg'],
+                font=(system_fonts['ui_font'], 10)).pack(pady=10)
         
         font_var = tk.IntVar(value=current_font_size)
-        tk.Spinbox(dialog, from_=8, to=32, textvariable=font_var,
+        tk.Spinbox(main_frame, from_=8, to=32, textvariable=font_var,
                   font=(system_fonts['ui_font'], 10)).pack()
+        
+        # 実行後自動終了
+        tk.Label(main_frame, text="実行後自動終了", bg=theme['bg'], fg=theme['fg'],
+                font=(system_fonts['ui_font'], 10)).pack(pady=10)
+        
+        auto_close_var = tk.StringVar(value=getattr(self, 'auto_close_setting', 'never'))
+        
+        tk.Radiobutton(main_frame, text="閉じない", variable=auto_close_var, value='never',
+                     bg=theme['bg'], fg=theme['fg'], selectcolor=theme['fg']).pack()
+        tk.Radiobutton(main_frame, text="5秒後に閉じる", variable=auto_close_var, value='5',
+                     bg=theme['bg'], fg=theme['fg'], selectcolor=theme['fg']).pack()
+        tk.Radiobutton(main_frame, text="10秒後に閉じる", variable=auto_close_var, value='10',
+                     bg=theme['bg'], fg=theme['fg'], selectcolor=theme['fg']).pack()
         
         def apply_settings():
             global current_theme, current_font_size
             current_theme = theme_var.get()
             current_font_size = font_var.get()
+            self.auto_close_setting = auto_close_var.get()
             self.apply_theme()
             self.update_font_size()
             self.save_settings()
             dialog.destroy()
             messagebox.showinfo(t('success'), t('settings_saved'))
         
-        button_frame = tk.Frame(dialog, bg=theme['bg'])
+        button_frame = tk.Frame(main_frame, bg=theme['bg'])
         button_frame.pack(pady=20)
         
         tk.Button(button_frame, text=t('ok'), command=apply_settings,
-                 bg=theme['accent'], fg='white').pack(side=tk.LEFT, padx=5)
+                 bg=theme['accent'], fg='white', font=(system_fonts['ui_font'], 9),
+                 padx=15, pady=5).pack(side=tk.LEFT, padx=5)
         tk.Button(button_frame, text=t('cancel'), command=dialog.destroy,
-                 bg=theme['bg_secondary'], fg=theme['fg']).pack(side=tk.LEFT, padx=5)
+                 bg=theme['bg_secondary'], fg=theme['fg'], font=(system_fonts['ui_font'], 9),
+                 padx=15, pady=5).pack(side=tk.LEFT, padx=5)
     
     def show_about(self):
         messagebox.showinfo(t('about_title'), t('about_text'))
@@ -1158,6 +1528,7 @@ class ModernIDE:
                     settings = json.load(f)
                     current_theme = settings.get('theme', 'dark')
                     current_font_size = settings.get('font_size', system_fonts['default_size'])
+                    self.auto_close_setting = settings.get('auto_close', 'never')
             
             if os.path.exists(RECENT_FILES_FILE):
                 with open(RECENT_FILES_FILE, 'r', encoding='utf-8') as f:
@@ -1169,7 +1540,8 @@ class ModernIDE:
         try:
             settings = {
                 'theme': current_theme,
-                'font_size': current_font_size
+                'font_size': current_font_size,
+                'auto_close': getattr(self, 'auto_close_setting', 'never')
             }
             with open(SETTINGS_FILE, 'w', encoding='utf-8') as f:
                 json.dump(settings, f, indent=2)
@@ -1178,6 +1550,371 @@ class ModernIDE:
                 json.dump(recent_files[:10], f, indent=2)
         except:
             pass
+    
+    def load_venv_settings(self):
+        """仮想環境設定を読み込み"""
+        try:
+            if os.path.exists('venv_settings.json'):
+                with open('venv_settings.json', 'r', encoding='utf-8') as f:
+                    return json.load(f)
+        except Exception as e:
+            print(f"仮想環境設定の読み込みエラー: {e}")
+        return {'venv_path': '.venv', 'use_custom_path': False}
+    
+    def save_venv_settings(self, venv_path, use_custom_path):
+        """仮想環境設定を保存"""
+        try:
+            settings = {
+                'venv_path': venv_path,
+                'use_custom_path': use_custom_path
+            }
+            with open('venv_settings.json', 'w', encoding='utf-8') as f:
+                json.dump(settings, f, indent=2)
+        except Exception as e:
+            print(f"仮想環境設定の保存エラー: {e}")
+    
+    def browse_venv_path(self, path_var):
+        """仮想環境ディレクトリを選択"""
+        from tkinter import filedialog
+        initial_dir = path_var.get()
+        if not os.path.isabs(initial_dir):
+            initial_dir = os.getcwd()
+        
+        folder_path = filedialog.askdirectory(
+            title="仮想環境ディレクトリを選択",
+            initialdir=initial_dir
+        )
+        
+        if folder_path:
+            path_var.set(folder_path)
+    
+    def copy_to_clipboard(self, text):
+        """テキストをクリップボードにコピー"""
+        try:
+            self.root.clipboard_clear()
+            self.root.clipboard_append(text)
+            # 一時的なフィードバックを表示
+            temp_label = tk.Label(self.root, text="✓ クリップボードにコピーしました", 
+                               bg=theme['accent'], fg='white',
+                               font=(system_fonts['ui_font'], 10))
+            temp_label.place(x=10, y=10)
+            self.root.after(2000, temp_label.destroy)
+        except Exception as e:
+            messagebox.showerror("エラー", f"クリップボードへのコピーに失敗しました: {e}")
+    
+    def parse_error(self, error_output, code_content):
+        """エラー出力を解析して行番号とエラー種別を抽出"""
+        error_info = {
+            'line_number': None,
+            'error_type': None,
+            'error_message': error_output,
+            'suggestions': []
+        }
+        
+        # 一般的なPythonエラーパターン
+        patterns = [
+            # 構文エラー
+            r'SyntaxError: (.+) at line (\d+)',
+            r'File ".*", line (\d+)',
+            r'.*line (\d+).*SyntaxError: (.+)',
+            
+            # インデントエラー
+            r'IndentationError: (.+) at line (\d+)',
+            r'.*line (\d+).*IndentationError: (.+)',
+            
+            # 名前エラー
+            r'NameError: name \'(.+)\' is not defined',
+            r'.*line (\d+).*NameError: name \'(.+)\' is not defined',
+            
+            # 型エラー
+            r'TypeError: (.+)',
+            r'.*line (\d+).*TypeError: (.+)',
+            
+            # 属性エラー
+            r'AttributeError: (.+)',
+            r'.*line (\d+).*AttributeError: (.+)',
+            
+            # インポートエラー
+            r'ImportError: (.+)',
+            r'ModuleNotFoundError: No module named \'(.+)\'',
+            
+            # ゼロ除算エラー
+            r'ZeroDivisionError: (.+)',
+            r'.*line (\d+).*ZeroDivisionError: (.+)',
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, error_output, re.IGNORECASE)
+            if match:
+                if 'line' in pattern.lower():
+                    # 行番号を抽出
+                    if len(match.groups()) >= 2:
+                        if match.group(1).isdigit():
+                            error_info['line_number'] = int(match.group(1))
+                            error_info['error_type'] = match.group(2)
+                        else:
+                            error_info['line_number'] = int(match.group(2))
+                            error_info['error_type'] = match.group(1)
+                    else:
+                        error_info['line_number'] = int(match.group(1))
+                        error_info['error_type'] = '構文エラー'
+                else:
+                    # モジュール未検出エラー
+                    if 'ModuleNotFoundError' in pattern or 'ImportError' in pattern:
+                        error_info['error_type'] = 'インポートエラー'
+                        error_info['suggestions'].append(f"インストールを試してください: pip install {match.group(1)}")
+                break
+        
+        # エラー種別に基づいて提案を生成
+        if error_info['error_type']:
+            error_type = error_info['error_type'].lower()
+            
+            if 'syntax' in error_type or '構文' in error_type:
+                error_info['suggestions'].extend([
+                    "コロン、括弧、引用符の欠落を確認",
+                    "適切なインデントを確認",
+                    "不一致な括弧を確認"
+                ])
+            elif 'indentation' in error_type or 'インデント' in error_type:
+                error_info['suggestions'].extend([
+                    "一貫したインデントを使用（4スペース推奨）",
+                    "タブとスペースの混在を確認",
+                    "適切なインデントレベルを確認"
+                ])
+            elif 'name' in error_type or '名前' in error_type:
+                error_info['suggestions'].extend([
+                    "変数名のスペルを確認",
+                    "使用前に変数が定義されていることを確認",
+                    "インポート文を確認"
+                ])
+            elif 'type' in error_type or '型' in error_type:
+                error_info['suggestions'].extend([
+                    "変数のデータ型を確認",
+                    "型変換関数を使用（int(), str()など）",
+                    "関数の引数を確認"
+                ])
+            elif 'attribute' in error_type or '属性' in error_type:
+                error_info['suggestions'].extend([
+                    "オブジェクト属性名のスペルを確認",
+                    "オブジェクトの型と利用可能なメソッドを確認",
+                    "必要なモジュールのインポート文を確認"
+                ])
+        
+        return error_info
+    
+    def fix_common_errors(self, code_content, error_info):
+        """一般的なエラーを自動修正"""
+        if not error_info['line_number'] or not error_info['error_type']:
+            return code_content, False
+        
+        lines = code_content.split('\n')
+        line_num = error_info['line_number'] - 1  # 0ベースに変換
+        
+        if line_num < 0 or line_num >= len(lines):
+            return code_content, False
+        
+        original_line = lines[line_num]
+        fixed_line = original_line
+        fixed = False
+        
+        error_type = error_info['error_type'].lower()
+        
+        # 一般的な構文エラーを修正
+        if 'syntax' in error_type or 'indentation' in error_type or '構文' in error_type or 'インデント' in error_type:
+            # if/for/while/def/class文の末尾に欠落したコロンを追加
+            if any(keyword in original_line for keyword in ['if ', 'for ', 'while ', 'def ', 'class ']) and not original_line.rstrip().endswith(':'):
+                fixed_line = original_line.rstrip() + ':'
+                fixed = True
+            
+            # 欠落した引用符を修正
+            if original_line.count('"') % 2 != 0 or original_line.count("'") % 2 != 0:
+                if original_line.count('"') % 2 != 0:
+                    fixed_line = original_line.rstrip() + '"'
+                elif original_line.count("'") % 2 != 0:
+                    fixed_line = original_line.rstrip() + "'"
+                fixed = True
+            
+            # 不一致な括弧を修正
+            if original_line.count('(') != original_line.count(')'):
+                missing = original_line.count('(') - original_line.count(')')
+                if missing > 0:
+                    fixed_line = original_line.rstrip() + ')' * missing
+                else:
+                    fixed_line = original_line.rstrip() + '(' * (-missing)
+                fixed = True
+        
+        # インデントエラーを修正
+        if 'indentation' in error_type or 'インデント' in error_type:
+            # 不一貫なインデントを修正
+            if line_num > 0:
+                prev_line = lines[line_num - 1]
+                if prev_line.endswith(':') and not original_line.startswith('    '):
+                    fixed_line = '    ' + original_line
+                    fixed = True
+                elif original_line.startswith('    ') and not prev_line.endswith(':'):
+                    # この行がインデントされるべきでないかを確認
+                    if any(keyword in original_line for keyword in ['def ', 'class ', 'if ', 'for ', 'while ']):
+                        fixed_line = original_line[4:]  # インデントを削除
+                        fixed = True
+        
+        # 修正があった場合は適用
+        if fixed:
+            lines[line_num] = fixed_line
+            return '\n'.join(lines), True
+        
+        return code_content, False
+    
+    def show_error_dialog(self, error_output, code_content, tab=None):
+        """詳細なエラーダイアログと修正オプションを表示"""
+        error_info = self.parse_error(error_output, code_content)
+        
+        dialog = tk.Toplevel(self.root)
+        dialog.title("エラー解析と修正")
+        dialog.geometry("600x500")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        theme = THEMES[current_theme]
+        dialog.configure(bg=theme['bg'])
+        
+        # エラー情報フレーム
+        info_frame = tk.Frame(dialog, bg=theme['bg'])
+        info_frame.pack(pady=10, padx=20, fill=tk.X)
+        
+        tk.Label(info_frame, text="エラー解析:", bg=theme['bg'], fg=theme['fg'],
+                font=(system_fonts['ui_font'], 10, 'bold')).pack(anchor=tk.W)
+        
+        # 行番号
+        if error_info['line_number']:
+            tk.Label(info_frame, text=f"行: {error_info['line_number']}", 
+                    bg=theme['bg'], fg=theme['fg_secondary'],
+                    font=(system_fonts['ui_font'], 9)).pack(anchor=tk.W, pady=2)
+        
+        # エラー種別
+        if error_info['error_type']:
+            tk.Label(info_frame, text=f"種別: {error_info['error_type']}", 
+                    bg=theme['bg'], fg=theme['fg_secondary'],
+                    font=(system_fonts['ui_font'], 9)).pack(anchor=tk.W, pady=2)
+        
+        # エラーメッセージ
+        msg_frame = tk.Frame(info_frame, bg=theme['bg'])
+        msg_frame.pack(fill=tk.X, pady=5)
+        
+        tk.Label(msg_frame, text="メッセージ:", bg=theme['bg'], fg=theme['fg'],
+                font=(system_fonts['ui_font'], 9)).pack(side=tk.LEFT)
+        
+        copy_btn = tk.Button(msg_frame, text="📋 コピー", 
+                           command=lambda: self.copy_to_clipboard(error_output),
+                           bg=theme['bg_secondary'], fg=theme['fg'],
+                           font=(system_fonts['ui_font'], 9))
+        copy_btn.pack(side=tk.RIGHT, padx=5)
+        
+        # エラーメッセージ表示
+        error_text = tk.Text(info_frame, height=4, font=(system_fonts['ui_font'], 10),
+                           bg=theme['bg_secondary'], fg=theme['fg'], wrap=tk.WORD)
+        error_text.pack(fill=tk.X, pady=5)
+        error_text.insert('1.0', error_output)
+        error_text.config(state=tk.DISABLED)
+        
+        # 提案
+        if error_info['suggestions']:
+            tk.Label(info_frame, text="提案:", bg=theme['bg'], fg=theme['fg'],
+                    font=(system_fonts['ui_font'], 9, 'bold')).pack(anchor=tk.W, pady=(10, 2))
+            
+            for suggestion in error_info['suggestions']:
+                tk.Label(info_frame, text=f"• {suggestion}", 
+                        bg=theme['bg'], fg=theme['fg_secondary'],
+                        font=(system_fonts['ui_font'], 10)).pack(anchor=tk.W, padx=10)
+        
+        # コードプレビュー
+        if error_info['line_number']:
+            tk.Label(info_frame, text="コードプレビュー (行 {}):".format(error_info['line_number']), 
+                    bg=theme['bg'], fg=theme['fg'],
+                    font=(system_fonts['ui_font'], 9, 'bold')).pack(anchor=tk.W, pady=(10, 2))
+            
+            code_lines = code_content.split('\n')
+            start_line = max(0, error_info['line_number'] - 3)
+            end_line = min(len(code_lines), error_info['line_number'] + 2)
+            
+            code_text = tk.Text(info_frame, height=6, font=(system_fonts['ui_font'], 10),
+                               bg=theme['bg_secondary'], fg=theme['fg'])
+            code_text.pack(fill=tk.X, pady=5)
+            
+            for i in range(start_line, end_line):
+                line_num = i + 1
+                prefix = ">>> " if line_num == error_info['line_number'] else "    "
+                code_text.insert(tk.END, f"{prefix}{line_num:3d}: {code_lines[i]}\n")
+            
+            code_text.config(state=tk.DISABLED)
+        
+        # アクションボタン
+        button_frame = tk.Frame(dialog, bg=theme['bg'])
+        button_frame.pack(pady=20, padx=20, fill=tk.X)
+        
+        # 自動修正を試行
+        if error_info['line_number'] and tab:
+            try:
+                fixed_code, was_fixed = self.fix_common_errors(code_content, error_info)
+                if was_fixed:
+                    fix_btn = tk.Button(button_frame, text="🔧 自動修正", 
+                                     command=lambda: self.apply_fix(tab, fixed_code, dialog),
+                                     bg=theme['accent'], fg='white',
+                                     font=(system_fonts['ui_font'], 9))
+                    fix_btn.pack(side=tk.LEFT, padx=5)
+            except:
+                pass
+        
+        # 行に移動
+        if error_info['line_number'] and tab:
+            goto_btn = tk.Button(button_frame, text="📍 行に移動", 
+                               command=lambda: self.go_to_line(tab, error_info['line_number'], dialog),
+                               bg=theme['bg_secondary'], fg=theme['fg'],
+                               font=(system_fonts['ui_font'], 9))
+            goto_btn.pack(side=tk.LEFT, padx=5)
+        
+        # 閉じる
+        close_btn = tk.Button(button_frame, text="閉じる", command=dialog.destroy,
+                            bg=theme['bg_secondary'], fg=theme['fg'],
+                            font=(system_fonts['ui_font'], 9))
+        close_btn.pack(side=tk.RIGHT, padx=5)
+    
+    def apply_fix(self, tab, fixed_code, dialog):
+        """自動修正をコードに適用"""
+        try:
+            tab.text.delete('1.0', tk.END)
+            tab.text.insert('1.0', fixed_code)
+            dialog.destroy()
+            messagebox.showinfo("成功", "エラーが自動的に修正されました！")
+        except Exception as e:
+            messagebox.showerror("エラー", f"修正の適用に失敗しました: {e}")
+    
+    def go_to_line(self, tab, line_number, dialog):
+        """コードの特定の行に移動"""
+        try:
+            # 最初にダイアログを閉じる
+            dialog.destroy()
+            
+            # アクティブでない場合はタブを切り替え
+            global active_tab
+            if tab != active_tab:
+                self.notebook.select(self.tabs.index(tab))
+                active_tab = tab
+            
+            # 行に移動
+            line_start = f"{line_number}.0"
+            tab.text.mark_set(tk.INSERT, line_start)
+            tab.text.see(line_start)
+            tab.text.focus_set()
+            
+            # 行を一時的にハイライト
+            tab.text.tag_add('error_line', line_start, f"{line_number}.end")
+            tab.text.tag_config('error_line', background='#ffcccc')
+            
+            # 3秒後にハイライトを削除
+            self.root.after(3000, lambda: tab.text.tag_remove('error_line', line_start, f"{line_number}.end"))
+            
+        except Exception as e:
+            messagebox.showerror("エラー", f"行への移動に失敗しました: {e}")
     
     def save_recent_files(self):
         try:

@@ -13,19 +13,21 @@ A modern, intelligent code editor with advanced error analysis, auto-fix capabil
 ### 🇺🇸 English Version
 - **Location**: [`Mini-IDE-English/`](./Mini-IDE-English/)
 - **Main File**: `mini_ide_english.pyw`
+- **Executable**: `Mini IDE English.exe`
 - **Documentation**: [README.md](./Mini-IDE-English/README.md)
 - **Features**: Full English interface and documentation
 
 ### 🇯🇵 Japanese Version  
 - **Location**: [`Mini-IDE-Japanese/`](./Mini-IDE-Japanese/)
 - **Main File**: `mini_ide_japanese.pyw`
+- **Executable**: `Mini IDE Japanese.exe`
 - **Documentation**: [README.md](./Mini-IDE-Japanese/README.md)
 - **Features**: Full Japanese interface and documentation
 
 ## ✨ Key Features
 
 ### 🎯 Core Functionality
-- **Multi-language Syntax Highlighting** - Python, JavaScript, HTML, CSS, JSON, XML, Markdown, Java, C#, C/C++, Rust, PHP, Ruby, Go, Swift, Kotlin
+- **Multi-language Syntax Highlighting** - 15+ languages: Python, JavaScript, HTML, CSS, JSON, XML, Markdown, Java, C#, C/C++, Rust, PHP, Ruby, Go, Swift, Kotlin
 - **Dual Theme System** - Professional dark and light themes with smooth transitions
 - **Smart Auto-save** - Configurable intervals with manual override
 - **Advanced Font Control** - Customizable sizes with presets (Small, Medium, Large)
@@ -47,9 +49,9 @@ A modern, intelligent code editor with advanced error analysis, auto-fix capabil
 - **Multi-language Error Support** - Syntax, Indentation, Name, Type, Attribute, Import errors
 
 ### 📦 Development Integration
-- **Automatic Module Detection** - Parse imports and suggest missing dependencies
+- **Enhanced Module Installation** - Auto-detect dependencies from code with virtual environment support
 - **Virtual Environment Management** - Custom venv paths with persistent settings
-- **Direct Code Execution** - Run Python code instantly with error analysis
+- **Direct Code Execution** - Run Python code instantly with automatic error analysis
 - **Package Installation** - Install modules in virtual or global environments
 - **Error-to-Fix Workflow** - Seamless transition from error detection to resolution
 
@@ -59,7 +61,7 @@ A modern, intelligent code editor with advanced error analysis, auto-fix capabil
 - Python 3.8 or higher
 - Tkinter (usually included with Python)
 
-### Running the Application
+### Running Application
 
 #### Windows (Recommended)
 ```bash
@@ -96,13 +98,13 @@ python mini_ide_japanese.pyw
 
 ### 🎯 First Steps with Error Analysis
 1. **Write Code** - Create or open a Python file
-2. **Run Code** - Press F5 or click the Run button
-3. **Error Detection** - If errors occur, the analysis dialog appears automatically
+2. **Run Code** - Press F5 or click Run button
+3. **Error Detection** - If errors occur, analysis dialog appears automatically
 4. **Auto-Fix** - Click "🔧 Auto Fix" for common syntax errors
 5. **Navigate** - Use "📍 Go to Line" to jump to error locations
 
 ### 📦 Virtual Environment Setup
-1. **Open Module Installer** - Click the 📦 Install button
+1. **Open Module Installer** - Click 📦 Install button
 2. **Configure Venv** - Enable "Use Virtual Environment" and set custom path
 3. **Auto-Detect Modules** - Choose "Auto-detect from code" to find required packages
 4. **Install** - Select modules and install with one click
@@ -112,18 +114,24 @@ python mini_ide_japanese.pyw
 ```
 mini-ide/
 ├── Mini-IDE-English/           # English version
-│   ├── mini_ide_english.py    # Main application
+│   ├── mini_ide_english.pyw    # Main application
 │   ├── README.md               # English documentation
 │   ├── setup.py               # Installation script
-│   └── LICENSE                # MIT license
+│   ├── LICENSE                # MIT license
+│   ├── dist/                  # Built executable
+│   │   └── Mini IDE English.exe
+│   └── [config files]        # Settings files
 ├── Mini-IDE-Japanese/         # Japanese version
-│   ├── mini_ide_japanese.py   # Main application
+│   ├── mini_ide_japanese.pyw  # Main application
 │   ├── README.md               # Japanese documentation
 │   ├── setup.py               # Installation script
-│   └── LICENSE                # MIT license
-├── README_GitHub.md           # This file
-├── Professional Mini IDE.py    # Original version
-└── Mini IDE1,２.pyw          # Japanese original
+│   ├── LICENSE                # MIT license
+│   ├── dist/                  # Built executable
+│   │   └── Mini IDE Japanese.exe
+│   └── [config files]        # Settings files
+├── README.md                  # This file
+├── README_GitHub.md          # GitHub main README
+└── [legacy files]            # Original versions
 ```
 
 ## ⌨️ Universal Shortcuts
@@ -151,23 +159,6 @@ mini-ide/
 | | `Ctrl++` | Increase font |
 | | `Ctrl+-` | Decrease font |
 
-## 🎨 Customization Options
-
-### Theme System
-- **Dark Theme**: VSCode-inspired black interface
-- **Light Theme**: Clean, bright workspace
-- **Custom Colors**: Professional color schemes
-
-### Font Configuration
-- **Text Font**: 8px-32px range
-- **UI Font**: 8px-24px range  
-- **Presets**: Small (10px), Medium (14px), Large (18px)
-
-### Auto-save Settings
-- **Toggle**: Enable/disable functionality
-- **Interval**: 10-300 second range
-- **Manual Save**: Always available with Ctrl+S
-
 ## 📊 Supported Languages
 
 | Category | Extensions | Languages |
@@ -191,7 +182,7 @@ Both versions create these configuration files automatically:
 ## 🔧 Development Setup
 
 ### For Contributors
-1. Fork the appropriate version repository
+1. Fork appropriate version repository
 2. Create a feature branch
 3. Make your changes
 4. Test thoroughly in both versions
@@ -255,7 +246,7 @@ We welcome contributions! Please focus on:
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](./Mini-IDE-English/LICENSE) file for details.
+This project is licensed under MIT License - see the [LICENSE](./Mini-IDE-English/LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
@@ -283,6 +274,21 @@ When reporting issues, please include:
 
 ---
 
-**Mini IDE** - Professional code editing for developers worldwide! 🌍
+**Mini IDE v2.0** - Professional code editing with intelligent error analysis! 🌍
 
 Choose your language version above and start coding efficiently! 🚀
+
+## 🎯 Error Analysis Workflow
+
+1. **Code Execution** → Error Detection
+2. **Error Analysis** → Line Number & Type Identification  
+3. **Auto-Fix** → One-Click Correction
+4. **Navigation** → Jump to Error Location
+5. **Learning** → Understand Error Patterns
+
+## 📦 Virtual Environment Features
+
+- **Custom Paths** - Set your preferred venv location
+- **Persistent Settings** - Remember your configuration
+- **Auto-Detection** - Find required modules automatically
+- **Flexible Installation** - Choose venv or global environment
